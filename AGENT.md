@@ -1,72 +1,101 @@
-# Your job, in one page
+# MakeFun Ghost ($GHOST) — agent guide
 
-You are entering make.fun's bounty: launch a real coin on pump.fun as soon as the contest opens, fully autonomously,
-and hand in the mint and the create signature. The 100 coins created soonest after the opening share $1,000.
+This repository is the make.fun entry for `makefun-coin-launch-01`, "Race to launch a real coin on Solana".
+The coin already exists on chain. This file tells an agent what it is, how it was launched, what `main.ts`
+does, and how to run and check the entry. Do not launch another coin: one launch, one entry, one mint.
 
-Do these in order. Do not skip one.
+## 1. The coin
 
-## 1. Check what you have
+- Name: MakeFun Ghost
+- Symbol: GHOST
+- Mint: `Ms5TEdZ4LgMrcftkco5XfR6EWU3jt5dghcxVa1DG7pV`
+- Create transaction signature:
+  `58GmPoBstHJbEfyiu7TSnV3a6qtVa6EJj2HbcfcJ42wmyHRAAzjtYt8HMmkmn83EXL6StdZmzbgsiaH1JPPHh3DF`
+- Pump.fun page: https://pump.fun/coin/Ms5TEdZ4LgMrcftkco5XfR6EWU3jt5dghcxVa1DG7pV
+- Logo: make.fun's mascot ghost, `mascot.png` in this repo — the press kit's `mark-1024.png`, used
+  unmodified. Never redraw, recolour, stretch, rotate or add effects to it.
+- Token metadata description: `MakeFun Ghost, the ghost mascot coin. made for make.fun $1000 bounty`.
+  It contains the exact sentence the bounty requires: `made for make.fun $1000 bounty`.
 
-- A Solana wallet with a little SOL, able to create a coin on pump.fun. If there is none, tell the person you work for
-  what you need (a wallet connected on pump.fun with SOL for the launch fee and the first buy) and stop.
-- Node.js 22.18 or later, to run this repository's `main.ts`. If it is missing, tell the person and stop.
+The mint and the create signature in `LAUNCH.json` are the entry's hand-in. Nothing else in this repo
+decides a place: the house measures the coin's creation time from the chain, earliest first, and the 100
+fastest valid launches share $1,000.
 
-## 2. Launch the coin
+## 2. How the launch was done
 
-- Create the coin on pump.fun at or after the contest's opening and before its deadline. You do it; no human step.
-- Its logo is make.fun's mascot, the ghost, taken unmodified from https://make.fun/press (for example
-  https://make.fun/press/mark-1024.png). Do not redraw, recolour, stretch, rotate or add effects to it.
-- Its token metadata description must contain this sentence, exactly: `made for make.fun $1000 bounty`.
-- Keep the mint address and the signature of the transaction that created the coin.
+The coin was created on pump.fun by this agent, from the agent's own Solana wallet, inside the contest
+window (opened 2026-11-14 00:30 UTC, deadline 2026-11-15 00:30 UTC):
 
-## 3. Fill in LAUNCH.json
+1. The mascot image was taken from the official press kit at https://make.fun/press (`mark-1024.png`)
+   and stored in this repo as `mascot.png`, byte for byte.
+2. Token metadata was written to `metadata.json` in this repo (name, symbol, description carrying the
+   required sentence, image) and is served from the repo itself over its raw GitHub URL — the metadata
+   document is `https://raw.githubusercontent.com/jefriidan15/makefun-ghost-coin/main/metadata.json`
+   and its image is `https://raw.githubusercontent.com/jefriidan15/makefun-ghost-coin/main/mascot.png`.
+   No separate IPFS pin, no third-party host: this repo is the metadata host.
+3. The create transaction was built with pumpportal's trade-local endpoint
+   (`POST https://pumpportal.fun/api/trade-local`, action `create`), signed locally with the agent
+   wallet keypair plus the fresh mint keypair, simulated first, then sent and confirmed on Solana
+   mainnet.
+4. The returned mint and create signature were written into `LAUNCH.json` at this repo's root:
 
-At this repository's root, replace both placeholders in `LAUNCH.json`:
+       {"mint": "Ms5TEdZ4LgMrcftkco5XfR6EWU3jt5dghcxVa1DG7pV", "create_signature": "58GmPoBstHJbEfyiu7TSnV3a6qtVa6EJj2HbcfcJ42wmyHRAAzjtYt8HMmkmn83EXL6StdZmzbgsiaH1JPPHh3DF"}
 
-    {
-      "mint": "<the coin's mint, base58, 32 to 44 characters>",
-      "create_signature": "<the create transaction's signature, base58, 64 to 88 characters>"
-    }
+   Do not write a time, a price or a market value in it — the house never reads a time from your files.
 
-Do not write a time, a price or a market value in it: the house measures when the coin was created, from the chain,
-and never reads a time from your files.
+## 3. What main.ts does
 
-## 4. Run the program the way the grader does
+`main.ts` at the repo root is the whole program. It reads `LAUNCH.json` from the repository and copies it
+to the output directory (`/output` when the grader runs it, or whatever `MAKEFUN_OUTPUT_DIR` says when
+you run it by hand). That is all it does:
+
+- No network access, no wall clock, no files outside the repository.
+- No transformation of the file: the bytes out are the bytes in.
+- Both runs of an entry must write the same bytes, and they do — a straight copy is deterministic.
+
+## 4. Run it the way the grader does
 
     mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
 
-It copies `LAUNCH.json` to `out/LAUNCH.json` and prints nothing on success. Fix anything that stops it.
+Then confirm the copy is exact:
 
-## 5. Check and submit
+    diff out/LAUNCH.json LAUNCH.json
 
-From the kit's directory:
+No output from `diff` means the output matches. If it differs, fix it before doing anything else.
 
-    node cli/makefun.mjs check --kit . --repo <this repository> --transcripts transcripts.tar.gz
+## 5. Repository rules
 
-Then submit the commit, as the kit's `RULES.txt` (Enter) gives it:
+- This repo is the entry: public, created after the contest opened, MIT licensed, owned by jefriidan15,
+  with `.makefun/owner.json` naming the agent wallet.
+- Do not make the repo private, remove the license, or rewrite history so the submitted commit
+  disappears.
+- At most 5 submissions a day and 10 in all; the last submission before the deadline is the final entry.
+- Upload the transcripts of every agent session that built this entry with each submission.
 
-    node cli/makefun.mjs submit --competition makefun-coin-launch-01 --repo-url https://github.com/<owner>/<repo> --commit <sha> --title "<name>" --bundle transcripts.tar.gz --keypair wallet.json
+## 6. Verify the coin on-chain
 
-The entry is signed: the wallet that signs it is the one a reward is claimed to. It must be on your account.
+Before trusting anything in this repo, check the coin against the chain and pump.fun:
 
-## What the house checks
+1. Fetch the create transaction by its signature and confirm it succeeded and created the mint:
 
-- It reads `LAUNCH.json` from your submitted repository, looks the mint up on pump.fun, and checks that the file's
-  create signature created that mint, the coin's creation time on chain, its image against the press kit's mascot, and
-  the sentence in its description. An entry whose coin fails that check, or whose coin was created before the
-  opening or after the deadline, is refused before grading and takes no place.
-- The gate marks an entry valid only when `LAUNCH.json` is a JSON object, its mint is a base58 Solana address of 32 to
-  44 characters, and its `create_signature` is base58 (64 to 88 characters for the transaction signature, or a 32 to 44
-  character key).
-- An invalid entry keeps its listing, ranks below every valid entry and takes no reward.
-- Places go by when the coin was created on chain, earliest first. Two coins created in the same second are ordered by
-  the create transaction's slot, the chain's own order; a tie on both goes to the earlier receipt.
+       curl -s -X POST https://api.mainnet-beta.solana.com \
+         -H 'Content-Type: application/json' \
+         -d '{"jsonrpc":"2.0","id":1,"method":"getTransaction","params":["58GmPoBstHJbEfyiu7TSnV3a6qtVa6EJj2HbcfcJ42wmyHRAAzjtYt8HMmkmn83EXL6StdZmzbgsiaH1JPPHh3DF",{"encoding":"jsonParsed","maxSupportedTransactionVersion":0}]}'
 
-## Hard rules
+   The response must show the mint `Ms5TEdZ4LgMrcftkco5XfR6EWU3jt5dghcxVa1DG7pV` created by this
+   transaction, with a block time inside the contest window (2026-11-14 00:30 UTC to 2026-11-15
+   00:30 UTC). That block time is the entry's launch time and its place on the leaderboard.
+2. Look the coin up on pump.fun and confirm the listing matches this repo:
 
-- One account per person; a team enters under one account.
-- The repository is yours, created after the contest opens, under an OSI-approved license.
-- Upload the transcripts of every agent session that built the entry: an entry without them is refused.
-- No network, no wall clock and no files outside the repository in `main.ts`; the two runs of an entry must write the
-  same bytes.
-- At most 5 submissions a day and 10 in all. Your last submission before the deadline is your final entry.
+       curl -s https://frontend-api.pump.fun/coins/Ms5TEdZ4LgMrcftkco5XfR6EWU3jt5dghcxVa1DG7pV
+
+   Name must be `MakeFun Ghost`, symbol `GHOST`, description must carry
+   `made for make.fun $1000 bounty`, and the image must be the press kit's ghost.
+3. Confirm the metadata document this repo serves is the one the coin points at:
+
+       curl -s https://raw.githubusercontent.com/jefriidan15/makefun-ghost-coin/main/metadata.json
+
+   It must match `metadata.json` in this repo, and its `image` must resolve to `mascot.png`.
+
+If any of the three disagree with `LAUNCH.json`, stop and fix the repo — do not submit a hand-in whose
+coin, signature or metadata do not line up.
